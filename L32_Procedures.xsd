@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+    Copyright 2009 The MITRE Corporation
+    Approved for Public Release: 09-3060. Distribution Unlimited.
+    
+    See L32_ClinicalDocument.xsd for license details
+-->
+<xs:schema targetNamespace="urn:hl7-org:v3"
+    xmlns="urn:hl7-org:v3" 
+    xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    elementFormDefault="qualified">    
+    
+    <xs:include schemaLocation="L32_Datatypes.xsd"/>
+    <xs:include schemaLocation="CDA/NarrativeBlock.xsd"/>
+    
+    <xs:complexType name="Procedures">
+        <xs:annotation>
+            <xs:documentation>
+                This module contains coded entries indicating procedures performed on a patient. CCD allows for a number 
+                of vocabularies to be employed: SNOMED, LOINC, CPT4, ICD9 and ICD10. The wide variety of vocabularies, and 
+                the existence of additional procedures not currently addressed, complicates interoperability. This 
+                interoperability issue is recognized as a standards gap. 
+                
+                This module defines a limited procedure element that is optional, in addition to the required structured
+                text. The CCD allows a procedure activity to be represented by either Act, Observation, or Procedure. This
+                shema only implements/allows the Procedure element.
+                
+                This data should be included in a component tag with an xsi:type="Procedures" attribute.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="L32Module">
+                <xs:sequence>
+                    <xs:element name="section">
+                        <xs:complexType>
+                            <xs:sequence>
+                                <xs:element name="templateId">
+                                    <xs:complexType>
+                                        <xs:attribute name="root" type="Id" fixed="2.16.840.1.113883.10.20.1.12"/>
+                                    </xs:complexType>
+                                </xs:element>
+                                <xs:element name="code" type="ProceduresCode"/>
+                                <xs:element name="title" type="xs:string" fixed="Procedures"/>
+                                <xs:element name="text" type="StrucDoc.Text"/>
+                                <xs:element name="entry" type="ProcedureEntry" minOccurs="0" maxOccurs="unbounded"/>
+                            </xs:sequence>
+                        </xs:complexType>
+                    </xs:element>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>    
+    
+    <xs:complexType name="ProceduresCode">
+        <xs:annotation>
+            <xs:documentation>
+                The values for a Procedures section specified by the CCD to 
+                indicate section conformance.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:attribute name="code" type="xs:string" fixed="47519-4"/>
+        <xs:attribute name="displayName" type="xs:string" fixed="History of procedures"/>
+        <xs:attribute name="codeSystemName" type="xs:string" fixed="LOINC" /> 
+        <xs:attribute name="codeSystem" type="xs:string" fixed="2.16.840.1.113883.6.1" />
+    </xs:complexType>
+    
+    <xs:complexType name="ProcedureEntry">
+        <xs:annotation>
+            <xs:documentation>
+                A procedure entry
+            </xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="procedure" type="Procedure" />
+        </xs:sequence>
+    </xs:complexType>
+    
+    <xs:complexType name="Procedure">
+        <xs:annotation>
+            <xs:documentation>
+                Description of a procedure
+            </xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="templateId">
+                <xs:complexType>
+                    <xs:attribute name="root" type="Id" fixed="2.16.840.1.113883.10.20.1.29"/>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="id" type="Id" />
+            <xs:element name="code" type="ProcedureCode" />
+            <xs:element name="statusCode" type="ProcedureStatusCode" />
+            <xs:element name="effectiveTime" type="DateRange" />
+            <xs:element name="methodCode" type="GenericCode"  minOccurs="0" />
+            <xs:element name="targetSiteCode" type="GenericCode"  minOccurs="0" />
+            <xs:element name="performer" type="InformantOrPerformer"  minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="informant" type="InformantOrPerformer" maxOccurs="unbounded"/>
+        </xs:sequence>
+        <xs:attribute name="classCode" type="xs:string" fixed="PROC"/>
+        <xs:attribute name="moodCode" type="xs:string" fixed="EVN"/>
+    </xs:complexType>
+    
+    <xs:complexType name="ProcedureCode">
+        <xs:annotation>
+            <xs:documentation>
+                The CCD allows 5 different coding systems for encoding a procedure. 
+            </xs:documentation>
+        </xs:annotation>
+        <xs:attribute name="code" type="xs:string"/>
+        <xs:attribute name="displayName" type="xs:string" />
+        <xs:attribute name="codeSystemName">
+            <xs:simpleType>
+                <xs:restriction base="xs:string">
+                    <xs:enumeration value="LOINC" />
+                    <xs:enumeration value="SNOMED" />
+                    <xs:enumeration value="CPT-4" />
+                    <xs:enumeration value="ICD9 Procedures" />
+                    <xs:enumeration value="ICD10 Procedure Coding System" />
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
+        <xs:attribute name="codeSystem">
+            <xs:simpleType>
+                <xs:restriction base="Id">
+                    <xs:enumeration value="2.16.840.1.113883.6.1"/>   <!-- LOINC -->
+                    <xs:enumeration value="2.16.840.1.113883.6.96"/>  <!-- SNOMED -->
+                    <xs:enumeration value="2.16.840.1.113883.6.12"/>  <!-- CPT-4 -->
+                    <xs:enumeration value="2.16.840.1.113883.6.104"/> <!-- ICD9 Procedures -->
+                    <xs:enumeration value="2.16.840.1.113883.6.4"/>   <!-- ICD10 Procedure Coding System -->
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
+    </xs:complexType>
+    
+    <xs:complexType name="ProcedureStatusCode">
+        <xs:annotation>
+            <xs:documentation>
+                Procedure Status Codes
+            </xs:documentation>
+        </xs:annotation>
+        <xs:attribute name="code">
+            <xs:simpleType>
+                <xs:restriction base="xs:string">
+                    <xs:enumeration value="cancelled"/>
+                    <xs:enumeration value="held"/>
+                    <xs:enumeration value="active"/>
+                    <xs:enumeration value="aborted"/>
+                    <xs:enumeration value="completed"/>
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
+    </xs:complexType>    
+    
+</xs:schema>

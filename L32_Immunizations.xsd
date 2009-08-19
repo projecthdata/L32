@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+    Copyright 2009 The MITRE Corporation
+    Approved for Public Release: 09-3060. Distribution Unlimited.
+    
+    See L32_ClinicalDocument.xsd for license details
+-->
+<xs:schema targetNamespace="urn:hl7-org:v3"
+    xmlns="urn:hl7-org:v3" 
+    xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    elementFormDefault="qualified">    
+    
+    <xs:include schemaLocation="L32_Datatypes.xsd"/>
+    <xs:include schemaLocation="L32_Medications.xsd"/>
+    <xs:include schemaLocation="CDA_Datatypes.xsd"/>
+    <xs:include schemaLocation="CDA/NarrativeBlock.xsd"/>
+    
+    <xs:complexType name="Immunizations">
+        <xs:annotation>
+            <xs:documentation>
+                This represents the overall structure of the C32 Immunizations Module. The 
+                Immunizations Module describes the patient's immunization history. This module 
+                uses the same data objects and constraints as the Medications Module. A 
+                component tag with an xsi:type="Immunizations" attribute should be used.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="L32Module">
+                <xs:sequence>
+                    <xs:element name="section">
+                        <xs:complexType>
+                            <xs:sequence>
+                                <xs:element name="templateId">
+                                    <xs:complexType>
+                                        <xs:attribute name="root" type="Id" fixed="2.16.840.1.113883.10.20.1.6"/>
+                                    </xs:complexType>
+                                </xs:element>
+                                <xs:element name="code" type="ImmunizationsCode"/>
+                                <xs:element name="title" type="xs:string" fixed="Immunizations"/>
+                                <xs:element name="text" type="StrucDoc.Text"/>
+                                <xs:element name="entry" type="ImmunizationEntry" maxOccurs="unbounded"/>
+                            </xs:sequence>
+                        </xs:complexType>
+                    </xs:element>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>    
+    
+    <xs:complexType name="ImmunizationsCode">
+        <xs:annotation>
+            <xs:documentation>
+                The values for an Immunizations section specified by the CCD to 
+                indicate section conformance.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:attribute name="code" type="xs:string" fixed="11369-6"/>
+        <xs:attribute name="displayName" type="xs:string" fixed="History of immunizations"/>
+        <xs:attribute name="codeSystemName" type="xs:string" fixed="LOINC" /> 
+        <xs:attribute name="codeSystem" type="xs:string" fixed="2.16.840.1.113883.6.1" />
+    </xs:complexType>
+    
+    <xs:complexType name="ImmunizationEntry">
+        <xs:annotation>
+            <xs:documentation>
+                This is a container for an immunization event.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="substanceAdministration" type="ImmunizationEventEntry"/>
+        </xs:sequence>
+    </xs:complexType>
+    
+    <xs:complexType name="ImmunizationEventEntry">
+        <xs:annotation>
+            <xs:documentation>
+                This contains information about an immunization, and uses
+                some data objects and constraints from the Medications module. 
+            </xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="templateId" minOccurs="2" maxOccurs="2">
+                <xs:complexType>
+                    <xs:attribute name="root">
+                        <xs:simpleType>
+                            <xs:restriction base="Id">
+                                <xs:enumeration value="2.16.840.1.113883.10.20.1.24"/>     <!-- CCD -->
+                                <xs:enumeration value="2.16.840.1.113883.3.88.11.32.14"/>   <!-- C32 -->
+                            </xs:restriction>
+                        </xs:simpleType>
+                    </xs:attribute>
+                    <xs:attribute name="assigningAuthorityName" use="optional">
+                        <xs:simpleType>
+                            <xs:restriction base="xs:string">
+                                <xs:enumeration value="CCD"/>
+                                <xs:enumeration value="HITSP/C32"/>
+                            </xs:restriction>
+                        </xs:simpleType>
+                    </xs:attribute>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="id" type="InstanceIdentifier"/>
+            <xs:element name="code" type="ImmunizationsCode" minOccurs="0"/> <!-- standard unclear on proper codes -->
+            <xs:element name="text" type="TextReference" minOccurs="0"/>
+            <xs:element name="statusCode" type="StatusCode" minOccurs="0"/>      
+            <xs:element name="effectiveTime" type="DateTime" minOccurs="0"/><!-- Administered date -->
+            <xs:element name="approachSiteCode" type="GenericCode" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="consumable" type="MedicationInformation"/>
+            <xs:element name="performer" type="InformantOrPerformer" minOccurs="0"/>
+            <xs:element name="informant" type="InformantOrPerformer" minOccurs="1" maxOccurs="unbounded"/>
+            <xs:element name="entryRelationship" type="MedicationInformationEntry" minOccurs="0" maxOccurs="unbounded">
+                <xs:annotation>
+                    <xs:documentation>
+                        Use typeCode SUBJ for a Medication Series Number and typeCode CAUS for a Reaction.
+                        Indicate which in a series of administrations a particular administration represents 
+                        (e.g. “hepatitis B vaccine number 2”) with SUBJ. CAUS for reaction is used to represent 
+                        any noted intended or unintended effects of the product. For example: full body rash, 
+                        nausea, rash resolved.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>        
+        <xs:attribute name="classCode" type="xs:string" fixed="SBADM"/>
+        <xs:attribute name="moodCode" type="xs:string" fixed="EVN"/>
+        <xs:attribute name="negationInd" type="xs:boolean"/>
+    </xs:complexType>
+    
+</xs:schema>

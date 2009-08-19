@@ -1,0 +1,242 @@
+<!-- 
+    Copyright 2009 The MITRE Corporation
+    Approved for Public Release: 09-3060. Distribution Unlimited.
+    
+    See L32_ClinicalDocument.xsd for license details
+-->
+<xs:schema targetNamespace="urn:hl7-org:v3"
+    xmlns="urn:hl7-org:v3" 
+    xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    xmlns:sdtc="urn:hl7-org:sdtc"
+    elementFormDefault="qualified">    
+    
+    <xs:include schemaLocation="L32_Datatypes.xsd"/>
+    <xs:include schemaLocation="CDA/NarrativeBlock.xsd"/>
+
+    <xs:complexType name="AdvanceDirectives">
+        <xs:annotation>
+            <xs:documentation>
+                This represents the overall structure of the C32 Advance Directives Module. It contains the
+                data describing the patient's Advance Directives and any reference to supporting documentation,
+                such as the existence of living wills, healthcare proxies and CPR and resuscitation status.
+                This data should be included in a L32_Module component tag with an xsi:type="AdvanceDirectives" attribute.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="L32Module">
+                <xs:sequence>
+                    <xs:element name="section">
+                        <xs:complexType>
+                            <xs:sequence>
+                                <xs:element name="templateId">
+                                    <xs:complexType>
+                                        <xs:attribute name="root" type="Id" fixed="2.16.840.1.113883.10.20.1.1"/>
+                                    </xs:complexType>
+                                </xs:element>
+                                <xs:element name="code" type="AdvanceDirectivesCode"/>
+                                <xs:element name="title" type="xs:string" fixed="Advance Directives"/>
+                                <xs:element name="text" type="StrucDoc.Text"/>
+                                <xs:element name="entry" type="AdvanceDirectiveEntry" maxOccurs="unbounded"/>
+                            </xs:sequence>
+                        </xs:complexType>
+                    </xs:element>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>    
+
+    <xs:complexType name="AdvanceDirectivesCode">
+        <xs:annotation>
+            <xs:documentation>
+                The values for an Advance Directives section specified by the CCD to 
+                indicate section conformance.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:attribute name="code" type="xs:string" fixed="42348-3"/>
+        <xs:attribute name="displayName" type="xs:string" fixed="Advance directives"/>
+        <xs:attribute name="codeSystemName" type="xs:string" fixed="LOINC" /> 
+        <xs:attribute name="codeSystem" type="Id" fixed="2.16.840.1.113883.6.1" />
+    </xs:complexType>    
+    
+    <xs:complexType name="AdvanceDirectiveEntry"> 
+        <xs:annotation>
+            <xs:documentation>
+                An Advance Directive entry.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="observation" type="AdvanceDirectiveEventEntry"/>
+        </xs:sequence>
+    </xs:complexType>    
+    
+    <xs:complexType name="AdvanceDirectiveEventEntry"> 
+        <xs:annotation>
+            <xs:documentation>
+                An Advance Directive Event entry.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="templateId" minOccurs="2" maxOccurs="2">
+                <xs:complexType>
+                    <xs:attribute name="root">
+                        <xs:simpleType>
+                            <xs:restriction base="Id">
+                                <xs:enumeration value="2.16.840.1.113883.10.20.1.17"/>     <!-- CCD Advance Directive Observation-->
+                                <xs:enumeration value="2.16.840.1.113883.3.88.11.32.13"/>  <!-- C32 -->
+                            </xs:restriction>
+                        </xs:simpleType>
+                    </xs:attribute>
+                    <xs:attribute name="assigningAuthorityName" use="optional">
+                        <xs:simpleType>
+                            <xs:restriction base="xs:string">
+                                <xs:enumeration value="CCD"/>
+                                <xs:enumeration value="HITSP/C32"/>
+                            </xs:restriction>
+                        </xs:simpleType>
+                    </xs:attribute>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="id" type="InstanceIdentifier"/>
+            <xs:element name="code" type="AdvanceDirectiveType"/>
+            <xs:element name="statusCode">
+                <xs:complexType>
+                    <xs:attribute name="code" type="xs:string" fixed="completed"/>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="effectiveTime" type="DateRange"/>
+            <xs:element name="informant" type="InformantOrPerformer" minOccurs="1" maxOccurs="unbounded"/>
+            <xs:element name="participant" type="CustodianOfTheDocument"/>
+            <xs:element name="entryRelationship" type="StatusObservation"/>
+        </xs:sequence>
+        <xs:attribute name="classCode" type="xs:string" fixed="OBS"/>
+        <xs:attribute name="moodCode" type="xs:string" fixed="EVN"/>
+    </xs:complexType>
+    
+    <xs:complexType name="AdvanceDirectiveType">
+        <xs:annotation>
+            <xs:documentation>
+                Advance directive type and free text type.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="originalText" type="TextReference"/>
+        </xs:sequence>
+        <xs:attribute name="code">
+            <xs:simpleType>
+                <xs:restriction base="xs:string">
+                    <xs:enumeration value="304251008"/>
+                    <xs:enumeration value="52765003"/>
+                    <xs:enumeration value="225204009"/>
+                    <xs:enumeration value="89666000"/>
+                    <xs:enumeration value="281789004"/>
+                    <xs:enumeration value="78823007"/>
+                    <xs:enumeration value="61420007"/>
+                    <xs:enumeration value="71388002"/>
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
+        <xs:attribute name="displayName" use="optional">
+            <xs:simpleType>
+                <xs:restriction base="xs:string">
+                    <xs:enumeration value="Resuscitation"/>
+                    <xs:enumeration value="Intubation"/>
+                    <xs:enumeration value="IV Fluid and Support"/>
+                    <xs:enumeration value="CPR"/>
+                    <xs:enumeration value="Antibiotics"/>
+                    <xs:enumeration value="Life Support"/>
+                    <xs:enumeration value="Tube Feeding"/>
+                    <xs:enumeration value="Other Directive"/>
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
+        <xs:attribute name="codeSystemName" type="xs:string" fixed="SNOMED CT"/> 
+        <xs:attribute name="codeSystem" type="Id" fixed="2.16.840.1.113883.6.96"/>
+    </xs:complexType>
+    
+    <xs:complexType name="CustodianOfTheDocument">
+        <xs:annotation>
+            <xs:documentation>
+                Name, address or other contact information for the person or organization 
+                that can provide a copy of the document.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:sequence>            
+            <xs:element name="participantRole">
+                <xs:complexType>
+                    <xs:sequence>                        
+                        <xs:element name="addr" type="Address" minOccurs="0" maxOccurs="unbounded"/>
+                        <xs:element name="telecom" type="PhoneEmail" minOccurs="0" maxOccurs="unbounded"/>
+                        <xs:element name="playingEntity">
+                            <xs:complexType>
+                                <xs:sequence>
+                                    <xs:element name="name" type="PersonName"/>
+                                </xs:sequence>
+                            </xs:complexType>
+                        </xs:element>
+                    </xs:sequence>
+                    <xs:attribute name="classCode" type="xs:string" fixed="AGNT"/>                    
+                </xs:complexType>
+            </xs:element>
+        </xs:sequence>
+        <xs:attribute name="typeCode" type="xs:string" fixed="CST"/>        
+    </xs:complexType>
+    
+    <xs:complexType name="StatusObservation">
+        <xs:annotation>
+            <xs:documentation>
+                An advance directive status observation.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="observation">
+                <xs:complexType>
+                    <xs:sequence> 
+                        <xs:element name="templateId">
+                            <xs:complexType>
+                                <xs:attribute name="root" type="Id" fixed="2.16.840.1.113883.10.20.1.37"/>
+                            </xs:complexType>
+                        </xs:element>    
+                        <xs:element name="code" type="StatusObservationCode"/>  
+                        <xs:element name="statusCode"> 
+                            <xs:complexType>
+                                <xs:attribute name="code" type="xs:string" fixed="completed"/>
+                            </xs:complexType> 
+                        </xs:element>
+                        <xs:element name="value" type="ANY" minOccurs="0" maxOccurs="unbounded"> <!--CCD pg 25 use datatype = CE -->
+                            <xs:annotation>
+                                <xs:documentation>
+                                    code:        displayName:
+                                    425392003    Current and Verified
+                                    425394002    Supported By Healthcare Will
+                                    425393008    Supported By Durable Power of Attorney for Healthcare
+                                    425396000    Verified With Family Only
+                                    310305009    Verified By Medical Record Only
+                                    
+                                    codeSystemName=AdvanceDirectiveStatusCode
+                                    codeSystem=2.16.840.1.113883.1.11.20.1
+                                </xs:documentation>
+                            </xs:annotation>
+                        </xs:element>
+                    </xs:sequence>
+                    <xs:attribute name="classCode" type="xs:string" fixed="OBS"/>
+                    <xs:attribute name="moodCode" type="xs:string" fixed="EVN"/>
+                </xs:complexType>
+            </xs:element>
+        </xs:sequence>
+        <xs:attribute name="typeCode" type="xs:string" fixed="REFR"/>
+    </xs:complexType> 
+    
+    <xs:complexType name="StatusObservationCode">
+        <xs:annotation>
+            <xs:documentation>
+                The values for a status observation section specified by the CCD to 
+                indicate section conformance.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:attribute name="code" type="xs:string" fixed="33999-4"/>
+        <xs:attribute name="displayName" type="xs:string" fixed="Status"/>
+        <xs:attribute name="codeSystemName" type="xs:string" fixed="LOINC" /> 
+        <xs:attribute name="codeSystem" type="Id" fixed="2.16.840.1.113883.6.1" />
+    </xs:complexType>    
+
+</xs:schema>

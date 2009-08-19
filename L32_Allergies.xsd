@@ -1,0 +1,424 @@
+<!-- 
+    Copyright 2009 The MITRE Corporation
+    Approved for Public Release: 09-3060. Distribution Unlimited.
+    
+    See L32_ClinicalDocument.xsd for license details
+-->
+<xs:schema targetNamespace="urn:hl7-org:v3"
+    xmlns="urn:hl7-org:v3" 
+    xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    xmlns:sdtc="urn:hl7-org:sdtc"
+    elementFormDefault="qualified">    
+      
+    <xs:include schemaLocation="L32_Datatypes.xsd"/>
+    <xs:include schemaLocation="CDA/NarrativeBlock.xsd"/>
+
+    
+    <xs:complexType name="Allergies">
+        <xs:annotation>
+            <xs:documentation>
+                This represents the overall structure of the C32 Allergy/Drug Sensitivity Module. It contains the
+                allergy or intolerance conditions and associated adverse reactions suffered by the patient. This 
+                data should be included in a L32_Module component tag with an xsi:type="Allergies" attribute.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="L32Module">
+                <xs:sequence>
+                    <xs:element name="section">
+                        <xs:complexType>
+                            <xs:sequence>
+                                <xs:element name="templateId">
+                                    <xs:complexType>
+                                        <xs:attribute name="root" type="Id" fixed="2.16.840.1.113883.10.20.1.2"/>
+                                    </xs:complexType>
+                                </xs:element>
+                                <xs:element name="code" type="AllergiesCode"/>
+                                <xs:element name="title" type="xs:string" fixed="Allergies and Adverse Reactions"/>
+                                <xs:element name="text" type="StrucDoc.Text"/>
+                                <xs:element name="entry" type="AllergyEntry" maxOccurs="unbounded"/>
+                            </xs:sequence>
+                        </xs:complexType>
+                    </xs:element>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+    
+    
+    <xs:complexType name="AllergiesCode">
+        <xs:annotation>
+            <xs:documentation>
+                The values for an Allergies section specified by the CCD to 
+                indicate section conformance.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:attribute name="code" type="xs:string" fixed="48765-2"/>
+        <xs:attribute name="displayName" type="xs:string" fixed="Allergies, adverse reactions, alerts"/>
+        <xs:attribute name="codeSystemName" type="xs:string" fixed="LOINC" /> 
+        <xs:attribute name="codeSystem" type="Id" fixed="2.16.840.1.113883.6.1" />
+    </xs:complexType>
+    
+    <xs:complexType name="AllergyEntry">
+        <xs:annotation>
+            <xs:documentation>
+                A container for information about an allergy. 
+            </xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="act">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="templateId" minOccurs="2" maxOccurs="2">
+                            <xs:complexType>
+                                <xs:attribute name="root">
+                                    <xs:simpleType>
+                                        <xs:restriction base="Id">
+                                            <xs:enumeration value="2.16.840.1.113883.10.20.1.27"/>     <!-- CCD -->
+                                            <xs:enumeration value="2.16.840.1.113883.3.88.11.32.6"/>   <!-- C32 -->
+                                        </xs:restriction>
+                                    </xs:simpleType>
+                                </xs:attribute>
+                                <xs:attribute name="assigningAuthorityName" use="optional">
+                                    <xs:simpleType>
+                                        <xs:restriction base="xs:string">
+                                            <xs:enumeration value="CCD"/>
+                                            <xs:enumeration value="HITSP/C32"/>
+                                        </xs:restriction>
+                                    </xs:simpleType>
+                                </xs:attribute>
+                            </xs:complexType>
+                        </xs:element>
+                        <xs:element name="id" type="InstanceIdentifier"/>
+                        <xs:element name="code">
+                            <xs:complexType>
+                                <xs:attribute name="nullFlavor" type="xs:string" fixed="NA"/>
+                            </xs:complexType>
+                        </xs:element>
+                        <xs:element name="entryRelationship">
+                            <xs:complexType>
+                                <xs:sequence>
+                                    <xs:element name="observation" type="AdverseEventEntry"/>
+                                </xs:sequence>
+                                <xs:attribute name="typeCode" type="xs:string" fixed="SUBJ"/>
+                            </xs:complexType>
+                        </xs:element>
+                    </xs:sequence>
+                    <xs:attribute name="classCode" type="xs:string" fixed="ACT"/>
+                    <xs:attribute name="moodCode" type="xs:string" fixed="EVN"/>
+                </xs:complexType>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>      
+    
+    <xs:complexType name="AdverseEventEntry">
+        <xs:annotation>
+            <xs:documentation>
+                Information about an adverse event due to an allergy or intolerance 
+                suffered by the patient. 
+            </xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="templateId">
+                <xs:complexType>
+                    <xs:attribute name="root" type="Id" fixed="2.16.840.1.113883.10.20.1.18"/>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="code" type="AdverseEventType"/>
+            <xs:element name="statusCode">
+                <xs:complexType>
+                    <xs:attribute name="code" type="xs:string" fixed="completed"/>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="effectiveTime" type="DateTime"/>
+            <xs:element name="informant" type="InformantOrPerformer" maxOccurs="unbounded"/>
+            <xs:element name="participant" type="AllergyProduct"/>
+            <xs:element name="entryRelationship" type="AllergyEntryRelationship" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+        <xs:attribute name="classCode" type="xs:string" fixed="OBS"/>
+        <xs:attribute name="moodCode" type="xs:string" fixed="EVN"/>
+    </xs:complexType>
+    
+    <xs:complexType name="AdverseEventType">
+        <xs:annotation>
+            <xs:documentation>
+                Describes the type of product and intolerance suffered by the patient.
+                
+                The vocabulary used for adverse event types SHALL come from a limited set of values
+                of SNOMED CT (C32-[88]).
+            </xs:documentation>
+        </xs:annotation>
+        <xs:attribute name="code">
+            <xs:simpleType>
+                <xs:restriction base="xs:token">
+                    <xs:enumeration value="420134006"/>    <!-- propensity to adverse reactions -->
+                    <xs:enumeration value="418038007"/>    <!-- propensity to adverse reactions to substance-->    
+                    <xs:enumeration value="419511003"/>    <!-- propensity to adverse reactions to drug -->
+                    <xs:enumeration value="418471000"/>    <!-- propensity to adverse reactions to food -->
+                    <xs:enumeration value="419199007"/>    <!-- allergy to substance -->
+                    <xs:enumeration value="416098002"/>    <!-- drug allergy -->    
+                    <xs:enumeration value="414285001"/>    <!-- food allergy -->
+                    <xs:enumeration value="59037007"/>     <!-- drug intolerance -->
+                    <xs:enumeration value="235719002"/>    <!-- food intolerance -->
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
+        <xs:attribute name="displayName">
+            <xs:simpleType>
+                <xs:restriction base="xs:string">
+                    <xs:enumeration value="propensity to adverse reactions"/>
+                    <xs:enumeration value="propensity to adverse reactions to substance"/>    
+                    <xs:enumeration value="propensity to adverse reactions to drug"/>
+                    <xs:enumeration value="propensity to adverse reactions to food"/>
+                    <xs:enumeration value="allergy to substance"/>
+                    <xs:enumeration value="drug allergy"/>   
+                    <xs:enumeration value="food allergy"/>
+                    <xs:enumeration value="drug intolerance"/>
+                    <xs:enumeration value="food intolerance"/>
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
+        <xs:attribute name="codeSystemName" type="xs:string" fixed="SNOMED CT"/>
+        <xs:attribute name="codeSystem" type="Id" fixed="2.16.840.1.113883.6.96"/>          
+    </xs:complexType>
+
+    
+    <xs:complexType name="AllergyProduct">
+        <xs:annotation>
+            <xs:documentation>
+                The product or agent that cases the intolerance. The name element contains 
+                the free-text name of the product and the code element contains the coded value 
+                describing the product. 
+            </xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="participantRole">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="playingEntity">
+                            <xs:complexType>
+                                <xs:sequence>
+                                    <xs:element name="code" type="AllergyProductCode"/>
+                                    <xs:element name="name" type="xs:string"/>
+                                </xs:sequence>
+                                <xs:attribute name="typeCode" type="xs:string" fixed="MMAT"/>
+                            </xs:complexType>
+                        </xs:element>
+                    </xs:sequence>
+                    <xs:attribute name="typeCode" type="xs:string" fixed="MANU"/>
+                </xs:complexType>
+            </xs:element>
+        </xs:sequence>
+        <xs:attribute name="typeCode" type="xs:string" fixed="CSM"/>
+    </xs:complexType>
+    
+    <xs:complexType name="AllergyProductCode">
+        <xs:annotation>
+            <xs:documentation>
+                Coded value for the product.
+                
+                Products causing the adverse event SHALL be coded to UNII for food and substance
+                allergies, RxNorm for medications, or NDF-RT for classes of medications (C32-[89]).
+            </xs:documentation>
+        </xs:annotation>
+        <xs:attribute name="code" type="xs:string"/>
+        <xs:attribute name="displayName" type="xs:string" />
+        <xs:attribute name="codeSystemName">
+            <xs:simpleType>
+                <xs:restriction base="xs:string">
+                    <xs:enumeration value="UNII" />
+                    <xs:enumeration value="RxNorm" />
+                    <xs:enumeration value="NDF-RT" />
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
+        <xs:attribute name="codeSystem">
+            <xs:simpleType>
+                <xs:restriction base="Id">
+                    <xs:enumeration value="2.16.840.1.113883.4.9"/>   <!-- UNII -->
+                    <xs:enumeration value="2.16.840.1.113883.6.88"/>  <!-- RxNorm -->
+                    <xs:enumeration value="2.16.840.1.113883.4.209"/>  <!-- NDF-RT -->
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
+    </xs:complexType>
+    
+    <xs:complexType name="AllergyEntryRelationship">
+        <xs:annotation>
+            <xs:documentation>
+                May represent (1) a reaction or (2) alert status. 
+                
+                (1) The reaction that may be caused by the product or agent. An 
+                    allergy entry may contain one or more reactions.
+                    Includes both a free text description and a coded value.
+                    
+                (2) An allergy entry may contain exactly one alert status. See
+                    type AlertStatusCode for allowable codes.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="observation">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="templateId">
+                            <xs:complexType>
+                                <xs:attribute name="root">
+                                    <xs:simpleType>
+                                        <xs:restriction base="Id">
+                                            <xs:enumeration value="2.16.840.1.113883.10.20.1.54"/> <!-- Reaction -->   
+                                            <xs:enumeration value="2.16.840.1.113883.10.20.1.39"/> <!-- Alert Status -->  
+                                        </xs:restriction>
+                                    </xs:simpleType>
+                                </xs:attribute>
+                            </xs:complexType>
+                        </xs:element>
+                        <xs:element name="text" type="xs:string" minOccurs="0" /> <!-- only required for Reaction -->
+                        <xs:element name="statusCode" minOccurs="0"> <!-- only required for Reaction -->
+                            <xs:complexType>
+                                <xs:attribute name="code" type="xs:string" fixed="completed"/>
+                            </xs:complexType>
+                        </xs:element>
+                        <xs:element name="value" type="ANY"/> <!-- Should be xsi:type="CD"; see types ReactionCode or AlertStatusCode for allowable values -->
+                        <xs:element name="entryRelationship" type="AllergySeverity" minOccurs="0" /> <!-- only for Reaction -->
+                        <!-- not implemented - entryRelationship for Reaction intervention (CCD 3.8.2.4.1.3) -->
+                    </xs:sequence>
+                    <xs:attribute name="classCode" type="xs:string" fixed="OBS"/>
+                    <xs:attribute name="moodCode" type="xs:string" fixed="EVN"/>
+                </xs:complexType>
+            </xs:element>
+        </xs:sequence>
+        <xs:attribute name="typeCode">
+            <xs:simpleType>
+                <xs:restriction base="xs:string">
+                    <xs:enumeration value="MFST"/> <!-- Reaction -->   
+                    <xs:enumeration value="REFR"/> <!-- Alert Status -->  
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
+    </xs:complexType>
+    
+    <xs:complexType name="ReactionCode">
+        <xs:annotation>
+            <xs:documentation>
+                The reaction SHALL be coded using the VA/KP Problem List Subset of SNOMED CT, and 
+                SHALL be terms that descend from the clinical finding (404684003) concept. (C32-[90])
+                
+                The complete list of codes can be downloaded from http://www.fda.gov/oc/datacouncil/term.html, 
+                or a delimited text file containing the list can be found on the NHIN Cooperative Portal.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:attribute name="code" type="xs:token" />
+        <xs:attribute name="displayName" type="xs:string"/>
+        <xs:attribute name="codeSystemName" type="xs:string" fixed="SNOMED CT"/>
+        <xs:attribute name="codeSystem" type="Id" fixed="2.16.840.1.113883.6.96"/>
+    </xs:complexType>
+    
+    <xs:complexType name="AlertStatusCode">
+        <xs:annotation>
+            <xs:documentation>
+                Status of alert/allergy
+            </xs:documentation>
+        </xs:annotation>
+        <xs:attribute name="code">
+            <xs:simpleType>
+                <xs:restriction base="xs:token">
+                    <xs:enumeration value="55561003"/>   <!-- Active -->
+                    <xs:enumeration value="392521001"/>  <!-- Prior History -->    
+                    <xs:enumeration value="73425007"/>   <!-- No Longer Active -->
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
+        <xs:attribute name="displayName">
+            <xs:simpleType>
+                <xs:restriction base="xs:string">
+                    <xs:enumeration value="Active"/>
+                    <xs:enumeration value="Prior History"/>    
+                    <xs:enumeration value="No Longer Active"/>
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
+        <xs:attribute name="codeSystemName" type="xs:string" fixed="SNOMED CT"/>
+        <xs:attribute name="codeSystem" type="Id" fixed="2.16.840.1.113883.6.96"/>
+    </xs:complexType>
+    
+    <xs:complexType name="AllergySeverity">
+        <xs:annotation>
+            <xs:documentation>
+                The level of severity of the allergy or intolerance. 
+           
+                Includes both a free text description and a coded value 
+                (see type AllergySeverityCode for more information).
+            </xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="observation">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="templateId">
+                            <xs:complexType>
+                                <xs:attribute name="root" type="Id" fixed="2.16.840.1.113883.10.20.1.55"/>
+                            </xs:complexType>
+                        </xs:element>
+                        <xs:element name="code">
+                            <xs:complexType>
+                                <xs:attribute name="code" type="xs:string" fixed="SEV"/>
+                                <xs:attribute name="displayName" type="xs:string" fixed="Severity"/>
+                                <xs:attribute name="codeSystemName" type="xs:string" fixed="ActCode"/>
+                                <xs:attribute name="codeSystem" type="xs:string" fixed="2.16.840.1.113883.5.4"/>
+                            </xs:complexType>
+                        </xs:element>
+                        <xs:element name="statusCode">
+                            <xs:complexType>
+                                <xs:attribute name="code" type="xs:string" fixed="completed"/>
+                            </xs:complexType>
+                        </xs:element>
+                        <xs:element name="text" type="xs:string"/>
+                        <xs:element name="value" type="ANY"/> <!-- Should be xsi:type="CD"; see type AllergySeverityCode for allowable values -->
+                    </xs:sequence>
+                    <xs:attribute name="classCode" type="xs:string" fixed="OBS"/>
+                    <xs:attribute name="moodCode" type="xs:string" fixed="EVN"/>
+                </xs:complexType>
+            </xs:element>
+        </xs:sequence>
+        <xs:attribute name="typeCode" type="xs:string" fixed="SUBJ"/>
+    </xs:complexType>
+
+    <xs:complexType name="AllergySeverityCode">
+        <xs:annotation>
+            <xs:documentation>
+                A code describing the level of severity of the allergy or intolerance.
+                
+                The terminology used for severity of the adverse event SHALL be recorded 
+                using the subset of SNOMED CT enumerated in this element. These terms descend 
+                from the severities (272141005) concept. (C32-[91]) 
+            </xs:documentation>
+        </xs:annotation>
+        <xs:attribute name="code">
+            <xs:simpleType>
+                <xs:restriction base="xs:token">
+                    <xs:enumeration value="255604002"/>   <!-- Mild -->
+                    <xs:enumeration value="371923003"/>   <!-- mild to moderate -->    
+                    <xs:enumeration value="6736007"/>     <!-- Moderate -->
+                    <xs:enumeration value="371924009"/>   <!-- moderate to severe -->
+                    <xs:enumeration value="24484000"/>    <!-- Severe -->
+                    <xs:enumeration value="399166001"/>   <!-- Fatal -->    
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
+        <xs:attribute name="displayName">
+            <xs:simpleType>
+                <xs:restriction base="xs:string">
+                    <xs:enumeration value="Mild"/>
+                    <xs:enumeration value="mild to moderate"/>    
+                    <xs:enumeration value="Moderate"/>
+                    <xs:enumeration value="moderate to severe"/>
+                    <xs:enumeration value="Severe"/>
+                    <xs:enumeration value="Fatal"/>
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
+        <xs:attribute name="codeSystemName" type="xs:string" fixed="SNOMED CT"/>
+        <xs:attribute name="codeSystem" type="Id" fixed="2.16.840.1.113883.6.96"/>
+    </xs:complexType>
+    
+</xs:schema>
